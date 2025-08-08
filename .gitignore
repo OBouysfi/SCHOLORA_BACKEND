@@ -1,0 +1,12 @@
+docker/mysql-data/mysql.sock
+docker/mysql-data/*
+src/vendor
+src/node_modules
+src/package-lock.json
+src/supervisord.log
+src/composer.lock
+.idea/workspace.xml
+/.idea
+src/supervisord.log
+src/supervisord.log
+docker/configs/laravel.env

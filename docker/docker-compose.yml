@@ -1,0 +1,150 @@
+version: '3.8'
+
+volumes:
+  vendor:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:
+
+services:
+  app:
+    container_name: scholora_backend_app
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "8000:80"
+    env_file:
+      - ./configs/laravel.env
+    networks:
+      - scholora_network
+    volumes:
+      - ../src:/var/www/html:rw
+      - vendor:/var/www/html/vendor
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # Base de données PostgreSQL (au lieu de MySQL)
+  postgres:
+    container_name: scholora_backend_postgres
+    image: postgres:15-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: scholora
+      POSTGRES_USER: scholora_user
+      POSTGRES_PASSWORD: scholora_pass
+      POSTGRES_ROOT_PASSWORD: root
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../src/database/migrations:/docker-entrypoint-initdb.d/
+    networks:
+      - scholora_network
+
+  # Redis pour cache et sessions
+  redis:
+    container_name: scholora_backend_redis
+    image: redis:7-alpine
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - scholora_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Elasticsearch pour recherche
+  elasticsearch:
+    container_name: scholora_backend_elasticsearch
+    image: elasticsearch:8.11.0
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - scholora_network
+    restart: unless-stopped
+
+  # Kibana pour Elasticsearch
+  kibana:
+    container_name: scholora_backend_kibana
+    image: kibana:8.11.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - scholora_network
+    restart: unless-stopped
+
+  # pgAdmin pour PostgreSQL 
+  pgadmin:
+    container_name: scholora_backend_pgadmin
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@scholora.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8081:80"
+    volumes:
+      - ./configs/pgadmin:/var/lib/pgadmin
+    networks:
+      - scholora_network
+
+  # Queue Worker Laravel (pour jobs asynchrones)
+  queue:
+    container_name: scholora_backend_queue
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    command: php artisan queue:work --tries=3 --timeout=90
+    depends_on:
+      - app
+      - redis
+    env_file:
+      - ./configs/laravel.env
+    volumes:
+      - ../src:/var/www/html:rw
+      - vendor:/var/www/html/vendor
+    networks:
+      - scholora_network
+    restart: unless-stopped
+
+  # Scheduler Laravel (pour tâches cron)
+  scheduler:
+    container_name: scholora_backend_scheduler
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    command: php artisan schedule:work
+    depends_on:
+      - app
+      - postgres
+    env_file:
+      - ./configs/laravel.env
+    volumes:
+      - ../src:/var/www/html:rw
+      - vendor:/var/www/html/vendor
+    networks:
+      - scholora_network
+    restart: unless-stopped
+
+networks:
+  scholora_network:
+    driver: bridge
+    name: scholora_network
