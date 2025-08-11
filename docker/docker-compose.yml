@@ -37,7 +37,6 @@ services:
       POSTGRES_DB: scholora
       POSTGRES_USER: scholora_user
       POSTGRES_PASSWORD: scholora_pass
-      POSTGRES_ROOT_PASSWORD: root
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../src/database/migrations:/docker-entrypoint-initdb.d/
