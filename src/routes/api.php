@@ -1,0 +1,20 @@
+<?php
+
+use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Admin\AdminController;
+use Illuminate\Support\Facades\Route;
+
+// Auth Routes
+Route::prefix('auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::get('me', [AuthController::class, 'me']);
+});
+
+// Super Admin Routes
+Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function () {
+    Route::get('dashboard', [AdminController::class, 'dashboard']);
+    Route::get('users', [AdminController::class, 'users']);
+    Route::get('roles', [AdminController::class, 'roles']);
+});
