@@ -12,11 +12,6 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api', ['except' => ['login']]);
-    }
-
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -35,14 +30,14 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
         $credentials['is_active'] = true;
 
-        if (!$token = auth()->attempt($credentials)) {
+        if (!$token = auth('api')->attempt($credentials)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Identifiants invalides'
             ], 401);
         }
 
-        $user = auth()->user();
+        $user = auth('api')->user();
         $user->update(['last_login_at' => now()]);
 
         return $this->respondWithToken($token);
@@ -50,8 +45,15 @@ class AuthController extends Controller
 
     public function me()
     {
-        $user = auth()->user();
-        $user->load(['roles.permissions']);
+        if (!auth('api')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Non authentifié'
+            ], 401);
+        }
+
+        $user = auth('api')->user();
+        $user->load(['roles']);
 
         return response()->json([
             'success' => true,
@@ -62,9 +64,8 @@ class AuthController extends Controller
                 'full_name' => $user->full_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
-                'avatar' => $user->avatar,
                 'roles' => $user->roles->pluck('name'),
-                'permissions' => $user->roles->flatMap->permissions->pluck('name')->unique(),
+                'is_super_admin' => $user->isSuperAdmin(),
                 'last_login_at' => $user->last_login_at
             ]
         ]);
@@ -72,7 +73,9 @@ class AuthController extends Controller
 
     public function logout()
     {
-        auth()->logout();
+        if (auth('api')->check()) {
+            auth('api')->logout();
+        }
         
         return response()->json([
             'success' => true,
@@ -82,12 +85,19 @@ class AuthController extends Controller
 
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());
+        if (!auth('api')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token invalide'
+            ], 401);
+        }
+
+        return $this->respondWithToken(auth('api')->refresh());
     }
 
     protected function respondWithToken($token)
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
         
         return response()->json([
             'success' => true,
@@ -95,7 +105,7 @@ class AuthController extends Controller
             'data' => [
                 'access_token' => $token,
                 'token_type' => 'bearer',
-                'expires_in' => auth()->factory()->getTTL() * 60,
+                'expires_in' => 3600, // 1 heure en dur pour éviter l'erreur factory
                 'user' => [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
