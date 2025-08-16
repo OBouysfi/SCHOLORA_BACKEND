@@ -63,8 +63,8 @@ class SuperAdminSeeder extends Seeder
             $superAdmin = User::create([
                 'first_name' => 'Super',
                 'last_name' => 'Admin',
-                'email' => 'superadmin@scholora.com',
-                'password' => Hash::make('SuperAdmin2024!'),
+                'email' => 'superadmin@scholora.ma',
+                'password' => Hash::make('SuperAdmin2025!'),
                 'phone' => '+212600000000',
                 'is_active' => true,
                 'email_verified_at' => now()
@@ -79,8 +79,8 @@ class SuperAdminSeeder extends Seeder
             DB::commit();
 
             $this->command->info('✅ Super Admin créé avec succès!');
-            $this->command->info('📧 Email: superadmin@scholora.com');
-            $this->command->info('🔑 Password: SuperAdmin2024!');
+            $this->command->info('📧 Email: superadmin@scholora.ma');
+            $this->command->info('🔑 Password: SuperAdmin2025!');
             
         } catch (\Exception $e) {
             DB::rollback();
