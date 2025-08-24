@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Admin\AdminController;
+use App\Http\Controllers\Api\NewsletterController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
@@ -18,3 +19,7 @@ Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function 
     Route::get('users', [AdminController::class, 'users']);
     Route::get('roles', [AdminController::class, 'roles']);
 });
+
+//Newsletter
+Route::post('/newsletters', [NewsletterController::class, 'store']);
+
