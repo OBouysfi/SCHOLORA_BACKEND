@@ -3,9 +3,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Newsletter extends Model
+class Newsleter extends Model
 {
-    protected $table = 'newsletters'; 
+    protected $table = 'newsleters'; 
     protected $fillable = ['email'];  
     public $timestamps = true;
 }

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class NewsletterRequest extends FormRequest
+class NewsleterRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,7 +14,7 @@ class NewsletterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|unique:newsletters,email',
+            'email' => 'required|email|unique:newsleters,email',
         ];
     }
 }

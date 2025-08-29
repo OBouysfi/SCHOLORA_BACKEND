@@ -5,6 +5,7 @@ volumes:
   postgres_data:
   redis_data:
   elasticsearch_data:
+  pgadmin_data:
 
 services:
   app:
@@ -101,7 +102,8 @@ services:
     ports:
       - "8081:80"
     volumes:
-      - ./configs/pgadmin:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgadmin
+
     networks:
       - scholora_network
 

@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Admin\AdminController;
-use App\Http\Controllers\Api\NewsletterController;
+use App\Http\Controllers\Api\NewsleterController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
@@ -29,6 +29,8 @@ Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function 
     Route::get('roles', [AdminController::class, 'roles']);
 });
 
-//Newsletter
-Route::post('/newsletters', [NewsletterController::class, 'store']);
+//Newsleter
+Route::post('/newsletters', [NewsleterController::class, 'store']);
+Route::get('/index', [NewsleterController::class, 'index']);
+Route::post('/newsletters/send-emails', [NewsleterController::class, 'sendEmails']);
 
