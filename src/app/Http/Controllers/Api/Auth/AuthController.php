@@ -38,7 +38,8 @@ class AuthController extends Controller
         }
 
         $user = auth('api')->user();
-        $user->update(['last_login_at' => now()]);
+        $user->update(['last_login_at' => now(),
+                        'is_online' => true]);
 
         return $this->respondWithToken($token);
     }
@@ -73,7 +74,9 @@ class AuthController extends Controller
 
     public function logout()
     {
+        $user = auth('api')->user();
         if (auth('api')->check()) {
+            $user->update(['is_online' => false]);
             auth('api')->logout();
         }
         
@@ -118,4 +121,15 @@ class AuthController extends Controller
             ]
         ]);
     }
+    public function userStats()
+    {
+        $totalUsers = User::count();
+        $totalOnlineUsers = User::where('is_online', true)->count();
+
+        return response()->json([
+            'totalUsers' => $totalUsers,
+            'totalOnlineUsers' => $totalOnlineUsers,
+        ]);
+    }
+
 }

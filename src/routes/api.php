@@ -14,6 +14,9 @@ Route::prefix('auth')->group(function () {
     Route::get('me', [AuthController::class, 'me']);
 });
 
+// User stats API
+Route::get('/user-stats', [AuthController::class, 'userStats']);
+
 // Password Reset Routes
 Route::prefix('auth')->group(function () {
     Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink']);
