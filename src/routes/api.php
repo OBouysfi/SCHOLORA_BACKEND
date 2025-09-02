@@ -8,32 +8,34 @@ use Illuminate\Support\Facades\Route;
 
 // Auth Routes
 Route::prefix('auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::get('me', [AuthController::class, 'me']);
+   Route::post('login', [AuthController::class, 'login']);
+   Route::middleware('auth:api')->group(function () {
+       Route::post('logout', [AuthController::class, 'logout']);
+       Route::post('refresh', [AuthController::class, 'refresh']);
+       Route::get('me', [AuthController::class, 'me']);
+   });
 });
-
-// User stats API
-Route::get('/user-stats', [AuthController::class, 'userStats']);
 
 // Password Reset Routes
 Route::prefix('auth')->group(function () {
-    Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink']);
-    Route::post('reset-password', [PasswordResetController::class, 'reset']);
-    Route::get('/reset-password/{token}', function ($token) {
-})->name('password.reset');
+   Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink']);
+   Route::post('reset-password', [PasswordResetController::class, 'reset']);
+   Route::get('/reset-password/{token}', function ($token) {
+       return view('auth.reset-password', ['token' => $token]);
+   })->name('password.reset');
 });
+
+// User stats API
+Route::middleware('auth:api')->get('/user-stats', [AuthController::class, 'userStats']);
 
 // Super Admin Routes
 Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function () {
-    Route::get('dashboard', [AdminController::class, 'dashboard']);
-    Route::get('users', [AdminController::class, 'users']);
-    Route::get('roles', [AdminController::class, 'roles']);
+   Route::get('dashboard', [AdminController::class, 'dashboard']);
+   Route::get('users', [AdminController::class, 'users']);
+   Route::get('roles', [AdminController::class, 'roles']);
 });
 
-//Newsleter
+// Newsletter
 Route::post('/newsletters', [NewsleterController::class, 'store']);
-Route::get('/index', [NewsleterController::class, 'index']);
-Route::post('/newsletters/send-emails', [NewsleterController::class, 'sendEmails']);
-
+Route::get('/newsletters', [NewsleterController::class, 'index']);
+Route::middleware('auth:api')->post('/newsletters/send-emails', [NewsleterController::class, 'sendEmails']);
