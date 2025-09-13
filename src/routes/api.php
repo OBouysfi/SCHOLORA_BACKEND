@@ -5,6 +5,9 @@ use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Admin\AdminController;
 use App\Http\Controllers\Api\NewsleterController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Tutor\AboutStepController;
+use App\Http\Controllers\Api\Tutor\PhotoStepController;
+use App\Http\Controllers\Api\Tutor\CertificationController;
 
 // Auth Routes
 Route::prefix('auth')->group(function () {
@@ -39,3 +42,15 @@ Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function 
 Route::post('/newsletters', [NewsleterController::class, 'store']);
 Route::get('/newsletters', [NewsleterController::class, 'index']);
 Route::middleware('auth:api')->post('/newsletters/send-emails', [NewsleterController::class, 'sendEmails']);
+
+// Tutor Registration Steps
+Route::prefix('tutors')->middleware('auth:api')->group(function () {
+   Route::post('/about', [AboutStepController::class, 'store']); 
+   Route::put('/about/{id}', [AboutStepController::class, 'update']);
+
+   Route::post('/photo', [PhotoStepController::class, 'store_photo']);
+
+   // Route for certifications
+   Route::post('/certifications', [CertificationController::class, 'store_certifications']);
+
+});
