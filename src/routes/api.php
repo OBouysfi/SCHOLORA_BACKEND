@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Tutor\AboutStepController;
 use App\Http\Controllers\Api\Tutor\PhotoStepController;
 use App\Http\Controllers\Api\Tutor\CertificationController;
+use App\Http\Controllers\Api\Tutor\EducationController;
+use App\Http\Controllers\Api\Tutor\DescriptionController;
+use App\Http\Controllers\Api\Tutor\VideoController;
+
 
 // Auth Routes
 Route::prefix('auth')->group(function () {
@@ -52,5 +56,14 @@ Route::prefix('tutors')->middleware('auth:api')->group(function () {
 
    // Route for certifications
    Route::post('/certifications', [CertificationController::class, 'store_certifications']);
+
+   // Route for education
+   Route::post('/education', [EducationController::class, 'store_Education']);
+
+   // Route for description 
+   Route::put('/description', [DescriptionController::class, 'store_description']);
+
+   // Route for intro video
+   Route::post('/video/{tutorId}', [VideoController::class, 'updateVideo']);
 
 });
