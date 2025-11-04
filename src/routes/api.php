@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Admin\AdminController;
 use App\Http\Controllers\Api\NewsleterController;
+use App\Http\Controllers\Api\Tutor\TutorRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Routes
@@ -39,3 +40,8 @@ Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function 
 Route::post('/newsletters', [NewsleterController::class, 'store']);
 Route::get('/newsletters', [NewsleterController::class, 'index']);
 Route::middleware('auth:api')->post('/newsletters/send-emails', [NewsleterController::class, 'sendEmails']);
+
+Route::prefix('tutor-registration')->group(function () {
+    Route::post('/about', [TutorRegistrationController::class, 'saveAboutStep']);
+    Route::get('/draft/{email}', [TutorRegistrationController::class, 'getTutorDraft']);
+});

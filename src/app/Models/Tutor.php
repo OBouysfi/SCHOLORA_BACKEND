@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tutor extends Model
 {
@@ -42,38 +44,6 @@ class Tutor extends Model
         'approved_at' => 'datetime'
     ];
 
-    // Relationships
-    public function languages(): HasMany
-    {
-        return $this->hasMany(TutorLanguage::class);
-    }
-
-    public function certifications(): HasMany
-    {
-        return $this->hasMany(TutorCertification::class);
-    }
-
-    public function education(): HasMany
-    {
-        return $this->hasMany(TutorEducation::class);
-    }
-
-    public function availability(): HasMany
-    {
-        return $this->hasMany(TutorAvailability::class);
-    }
-
-    public function subjects(): HasMany
-    {
-        return $this->hasMany(TutorSubject::class);
-    }
-
-    public function registrationSteps(): HasMany
-    {
-        return $this->hasMany(TutorRegistrationStep::class);
-    }
-
-    // Accessors
     public function getFullNameAttribute(): string
     {
         return $this->first_name . ' ' . $this->last_name;
@@ -84,12 +54,6 @@ class Tutor extends Model
         return $this->profile_photo ? asset('storage/' . $this->profile_photo) : null;
     }
 
-    public function getIntroVideoUrlAttribute(): ?string
-    {
-        return $this->intro_video ? asset('storage/' . $this->intro_video) : null;
-    }
-
-    // Scopes
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved');
@@ -98,29 +62,5 @@ class Tutor extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
-    }
-
-    public function scopeBySubject($query, $subject)
-    {
-        return $query->whereHas('subjects', function ($q) use ($subject) {
-            $q->where('subject', $subject);
-        });
-    }
-
-    // Methods
-    public function isProfileComplete(): bool
-    {
-        return $this->registrationSteps()->where('status', 'complete')->count() >= 8;
-    }
-
-    public function getCompletionPercentage(): int
-    {
-        $completedSteps = $this->registrationSteps()->where('status', 'complete')->count();
-        return round(($completedSteps / 8) * 100);
-    }
-
-    public function canSubmitForApproval(): bool
-    {
-        return $this->isProfileComplete() && $this->status === 'draft';
     }
 }
