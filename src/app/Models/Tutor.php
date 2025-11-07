@@ -63,4 +63,19 @@ class Tutor extends Model
     {
         return $query->where('status', 'pending');
     }
+
+    public function certifications()
+    {
+        return $this->hasMany(TutorCertification::class);
+    }
+
+    public function education()
+    {
+        return $this->hasMany(TutorEducation::class);
+    }
+    
+    public function availability()
+    {
+        return $this->hasMany(TutorAvailability::class);
+    }
 }

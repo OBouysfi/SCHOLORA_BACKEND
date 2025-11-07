@@ -44,4 +44,12 @@ Route::middleware('auth:api')->post('/newsletters/send-emails', [NewsleterContro
 Route::prefix('tutor-registration')->group(function () {
     Route::post('/about', [TutorRegistrationController::class, 'saveAboutStep']);
     Route::get('/draft/{email}', [TutorRegistrationController::class, 'getTutorDraft']);
+    Route::post('/photo', [TutorRegistrationController::class, 'savePhotoStep']);
+    Route::post('/certification', [TutorRegistrationController::class, 'saveCertificationStep']);
+    Route::post('/education', [TutorRegistrationController::class, 'saveEducationStep']);
+    Route::post('/description', [TutorRegistrationController::class, 'saveDescriptionStep']);
+    Route::post('/video', [TutorRegistrationController::class, 'saveVideoStep']);
+    Route::post('/availability', [TutorRegistrationController::class, 'saveAvailabilityStep']);
+    Route::post('/pricing', [TutorRegistrationController::class, 'savePricingStep']);
+    Route::post('/submit', [TutorRegistrationController::class, 'submitProfile']);
 });
