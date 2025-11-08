@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\TutorCertification;
+use App\Models\TutorEducation;
+use App\Models\TutorAvailability;
+
 
 class TutorRegistrationController extends Controller
 {
@@ -377,7 +381,7 @@ class TutorRegistrationController extends Controller
             ], 500);
         }
     }
-    
+
     public function saveAvailabilityStep(Request $request): JsonResponse
     {
         try {
@@ -451,7 +455,7 @@ class TutorRegistrationController extends Controller
             
             $tutor->update([
                 'hourly_rate' => $request->hourlyRate,
-                'currency' => 'USD'
+                'currency' => 'MAD'
             ]);
 
             Log::info('Pricing saved successfully:', ['id' => $tutor->id]);

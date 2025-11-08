@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\AdminController;
 use App\Http\Controllers\Api\NewsleterController;
 use App\Http\Controllers\Api\Tutor\TutorRegistrationController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ContactController;
 
 // Auth Routes
 Route::prefix('auth')->group(function () {
@@ -40,6 +41,8 @@ Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function 
 Route::post('/newsletters', [NewsleterController::class, 'store']);
 Route::get('/newsletters', [NewsleterController::class, 'index']);
 Route::middleware('auth:api')->post('/newsletters/send-emails', [NewsleterController::class, 'sendEmails']);
+// Contact Support
+Route::post('/contact', [ContactController::class, 'store']);
 
 Route::prefix('tutor-registration')->group(function () {
     Route::post('/about', [TutorRegistrationController::class, 'saveAboutStep']);

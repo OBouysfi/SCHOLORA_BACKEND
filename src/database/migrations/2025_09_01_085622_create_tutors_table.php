@@ -33,7 +33,7 @@ return new class extends Migration
             
             // Pricing Step
             $table->decimal('hourly_rate', 8, 2)->nullable();
-            $table->string('currency', 3)->default('USD');
+            $table->string('currency', 3)->default('MAD');
             
             // Status & Verification
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected'])->default('draft');
