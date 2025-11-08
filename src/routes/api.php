@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\NewsleterController;
 use App\Http\Controllers\Api\Tutor\TutorRegistrationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\Student\StudentRegistrationController;
 
 // Auth Routes
 Route::prefix('auth')->group(function () {
@@ -55,4 +56,8 @@ Route::prefix('tutor-registration')->group(function () {
     Route::post('/availability', [TutorRegistrationController::class, 'saveAvailabilityStep']);
     Route::post('/pricing', [TutorRegistrationController::class, 'savePricingStep']);
     Route::post('/submit', [TutorRegistrationController::class, 'submitProfile']);
+});
+
+Route::prefix('students')->group(function () {
+    Route::post('/register', [StudentRegistrationController::class, 'store']);
 });
