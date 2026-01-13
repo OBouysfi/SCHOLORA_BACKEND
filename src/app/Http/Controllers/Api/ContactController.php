@@ -18,7 +18,31 @@ class ContactController extends Controller
             'subject' => 'required|string|max:255',
             'message' => 'required|string|min:10',
         ]);
+        $captchaToken = $request->input('captchaToken');
 
+        if (!$captchaToken) {
+            return response()->json([
+                'message' => 'Captcha token missing',
+            ], 422);
+        }
+
+        $captchaResponse = Http::asForm()->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'secret'   => config('services.recaptcha.secret'),
+                'response' => $captchaToken,
+                'remoteip' => $request->ip(),
+            ]
+        )->json();
+
+        if (
+            empty($captchaResponse['success']) ||
+            ($captchaResponse['score'] ?? 0) < 0.5
+        ) {
+            return response()->json([
+                'message' => 'Captcha verification failed',
+            ], 403);
+        }
         $contact = ContactMessage::create([
             'user_id' => null,
             'name'    => $request->name,

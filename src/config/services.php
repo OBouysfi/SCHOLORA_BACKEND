@@ -24,7 +24,9 @@ return [
     'contact' => [
         'receiver' => env('CONTACT_RECEIVER_EMAIL'),
     ],
-    
+    'recaptcha' => [
+        'secret' => env('RECAPTCHA_SECRET_KEY'),
+    ],
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
