@@ -39,6 +39,7 @@ class TutorStudentSeeder extends Seeder
                'email' => 'student@test.com',
                'password' => Hash::make('password'),
                'phone' => '+212600000001',
+               'address' => '123 Rue Principale, Casablanca',
                'is_active' => true,
                'email_verified_at' => now()
            ]);
@@ -55,6 +56,7 @@ class TutorStudentSeeder extends Seeder
                'email' => 'tutor@test.com',
                'password' => Hash::make('password'),
                'phone' => '+212600000002',
+               'address' => '123 Rue Principale, Casablanca',
                'is_active' => true,
                'email_verified_at' => now()
            ]);

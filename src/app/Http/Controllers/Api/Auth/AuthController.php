@@ -65,6 +65,7 @@ class AuthController extends Controller
                 'full_name' => $user->full_name,
                 'email' => $user->email,
                 'phone' => $user->phone,
+                'address' => $user->address,
                 'roles' => $user->roles->pluck('name'),
                 'is_super_admin' => $user->isSuperAdmin(),
                 'last_login_at' => $user->last_login_at
@@ -115,12 +116,46 @@ class AuthController extends Controller
                     'last_name' => $user->last_name,
                     'full_name' => $user->full_name,
                     'email' => $user->email,
+                    'phone' => $user->phone,
+                    'address' => $user->address,
                     'roles' => $user->roles->pluck('name'),
                     'is_super_admin' => $user->isSuperAdmin()
                 ]
             ]
         ]);
     }
+    public function updateProfile(Request $request)
+    {
+        $user = auth('api')->user();
+
+        $data = $request->validate([
+            'first_name' => 'sometimes|string|max:255',
+            'last_name'  => 'sometimes|string|max:255',
+            'email'      => 'sometimes|email|unique:users,email,' . $user->id,
+            'phone'      => 'nullable|string|max:50',
+            'address'    => 'nullable|string|max:255',
+        ]);
+
+        $user->update($data);
+
+        $user->load('roles');
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'roles' => $user->roles->pluck('name'),
+                'is_super_admin' => $user->isSuperAdmin(),
+            ]
+        ]);
+    }
+
     public function userStats()
     {
         $totalUsers = User::count();

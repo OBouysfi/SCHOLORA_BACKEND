@@ -66,6 +66,7 @@ class SuperAdminSeeder extends Seeder
                 'email' => 'bouysfi.othman@gmail.com',
                 'password' => Hash::make('Scholora2025@'),
                 'phone' => '+212600000000',
+                'address' => '123 Rue Principale, Casablanca',
                 'is_active' => true,
                 'email_verified_at' => now()
             ]);
