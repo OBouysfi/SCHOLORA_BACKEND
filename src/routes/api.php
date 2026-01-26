@@ -9,16 +9,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\Student\StudentRegistrationController;
 
-// Auth Routes
 Route::prefix('auth')->group(function () {
-   Route::post('login', [AuthController::class, 'login']);
-   Route::middleware('auth:api')->group(function () {
-       Route::post('logout', [AuthController::class, 'logout']);
-       Route::post('refresh', [AuthController::class, 'refresh']);
-       Route::get('me', [AuthController::class, 'me']);
-       Route::put('profile', [AuthController::class, 'updateProfile']);
-   });
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);  
+
+    Route::middleware('auth:api')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
+        Route::get('me', [AuthController::class, 'me']);
+        Route::put('profile', [AuthController::class, 'updateProfile']);
+    });
 });
+
 
 // Password Reset Routes
 Route::prefix('auth')->group(function () {
@@ -61,4 +63,6 @@ Route::prefix('tutor-registration')->group(function () {
 
 Route::prefix('students')->group(function () {
     Route::post('/register', [StudentRegistrationController::class, 'store']);
+    Route::post('/login', [StudentAuthController::class, 'login']);
 });
+

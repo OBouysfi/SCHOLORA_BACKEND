@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -167,4 +168,37 @@ class AuthController extends Controller
         ]);
     }
 
+    public function register(Request $request)
+    {
+        $data = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email|unique:users',
+            'password'   => 'required|min:6',
+            'role'       => 'required|in:student,tutor'
+        ]);
+
+        $user = User::create([
+            'first_name' => $data['first_name'],
+            'last_name'  => $data['last_name'],
+            'email'      => $data['email'],
+            'password'   => Hash::make($data['password']),
+            'is_active'  => true
+        ]);
+
+        // Attach role
+        $roleId = $data['role'] === 'student' ? 2 : 3;
+        $user->roles()->attach($roleId);
+        if ($data['role'] === 'student') {
+        Student::create([
+                'user_id' => $user->id,
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name']
+            ]);
+        }
+        return response()->json([
+            'success' => true,
+            'user' => $user->load('roles')
+        ], 201);
+    }
 }

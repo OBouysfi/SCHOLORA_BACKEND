@@ -45,6 +45,17 @@ return [
             'provider' => 'users',
         ],
     ],
+    'guards' => [
+        'api' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+        ],
+
+        'student' => [
+            'driver' => 'jwt',
+            'provider' => 'students',
+        ],
+    ],
     /*
     |--------------------------------------------------------------------------
     | User Providers
@@ -67,7 +78,10 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-
+        'students' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Student::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

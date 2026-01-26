@@ -78,4 +78,8 @@ class Tutor extends Model
     {
         return $this->hasMany(TutorAvailability::class);
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

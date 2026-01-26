@@ -87,4 +87,13 @@ class User extends Authenticatable implements JWTSubject
                 $query->where('name', $permissionName);
             })->exists();
     }
+    public function student()
+    {
+        return $this->hasOne(Student::class);
+    }
+
+    public function tutor()
+    {
+        return $this->hasOne(Tutor::class);
+    }
 }
