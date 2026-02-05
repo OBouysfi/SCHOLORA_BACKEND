@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\Tutor\TutorRegistrationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\Student\StudentRegistrationController;
+use App\Http\Controllers\Api\Admin\PricingPackController;
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
@@ -40,7 +41,12 @@ Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function 
    Route::get('users', [AdminController::class, 'users']);
    Route::get('roles', [AdminController::class, 'roles']);
 });
-
+Route::prefix('admin')->group(function () {
+    Route::get('pricing-packs', [PricingPackController::class, 'index']);
+    Route::post('pricing-packs', [PricingPackController::class, 'store']);
+    Route::put('pricing-packs/{id}', [PricingPackController::class, 'update']);
+    Route::delete('pricing-packs/{id}', [PricingPackController::class, 'destroy']);
+});
 // Newsletter
 Route::post('/newsletters', [NewsleterController::class, 'store']);
 Route::get('/newsletters', [NewsleterController::class, 'index']);
