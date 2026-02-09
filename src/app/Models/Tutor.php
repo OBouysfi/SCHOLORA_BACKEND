@@ -82,4 +82,8 @@ class Tutor extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function pricingPack()
+    {
+        return $this->belongsTo(PricingPack::class);
+    }
 }

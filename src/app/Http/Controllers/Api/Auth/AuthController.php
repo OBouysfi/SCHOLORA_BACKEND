@@ -55,7 +55,7 @@ class AuthController extends Controller
         }
 
         $user = auth('api')->user();
-        $user->load(['roles']);
+        $user->load(['roles', 'tutor.pricingPack']);
 
         return response()->json([
             'success' => true,
@@ -69,7 +69,18 @@ class AuthController extends Controller
                 'address' => $user->address,
                 'roles' => $user->roles->pluck('name'),
                 'is_super_admin' => $user->isSuperAdmin(),
-                'last_login_at' => $user->last_login_at
+                'last_login_at' => $user->last_login_at,
+                'tutor' => $user->tutor ? [
+                    'id' => $user->tutor->id,
+                    'pack_subscribed_at' => $user->tutor->pack_subscribed_at,
+                    'pack_expires_at' => $user->tutor->pack_expires_at,
+                    'pricing_pack' => $user->tutor->pricingPack ? [
+                        'id' => $user->tutor->pricingPack->id,
+                        'name' => $user->tutor->pricingPack->name,
+                        'slug' => $user->tutor->pricingPack->slug,
+                        'price' => $user->tutor->pricingPack->price,
+                    ] : null,
+                ] : null
             ]
         ]);
     }
