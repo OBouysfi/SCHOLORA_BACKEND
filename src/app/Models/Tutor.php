@@ -31,7 +31,8 @@ class Tutor extends Model
         'rejection_reason',
         'total_hours',
         'average_rating',
-        'total_reviews'
+        'total_reviews',
+        'user_id',
     ];
 
     protected $casts = [

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\Student\StudentRegistrationController;
 use App\Http\Controllers\Api\Admin\PricingPackController;
+use App\Http\Controllers\Api\RenewController;
 
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
@@ -71,4 +72,7 @@ Route::prefix('students')->group(function () {
     Route::post('/register', [StudentRegistrationController::class, 'store']);
     Route::post('/login', [StudentAuthController::class, 'login']);
 });
+
+//renew request
+Route::post('/renew-request', [RenewController::class, 'send']);
 
