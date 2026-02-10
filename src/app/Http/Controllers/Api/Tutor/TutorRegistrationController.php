@@ -9,100 +9,83 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use App\Models\TutorCertification;
 use App\Models\TutorEducation;
 use App\Models\TutorAvailability;
+use App\Models\User;
 
 
 class TutorRegistrationController extends Controller
 {
+
     public function saveAboutStep(Request $request): JsonResponse
     {
         try {
-            Log::info('Request received:', $request->all());
+            Log::info('Tutor registration request', $request->all());
 
             $validated = $request->validate([
                 'firstName' => 'required|string|min:2|max:50',
-                'lastName' => 'required|string|min:2|max:50',
-                'email' => 'required|email',
-                'country' => 'required|string',
-                'subject' => 'required|string',
-                'phone' => 'nullable|string',
-                'isOver18' => 'required'
+                'lastName'  => 'required|string|min:2|max:50',
+                'email'     => 'required|email|unique:users,email',
+                'country'   => 'required|string',
+                'subject'   => 'required|string',
+                'phone'     => 'nullable|string',
+                'isOver18'  => 'required|boolean'
             ]);
 
-            Log::info('Validation passed');
+            // Create locked user with random password
+            $randomPassword = Str::random(40);
 
-            // Vérifier si l'email existe déjà
-            $existingTutor = Tutor::where('email', $request->email)->first();
+            $user = User::create([
+                'first_name' => $request->firstName,
+                'last_name'  => $request->lastName,
+                'email'      => $request->email,
+                'password'   => Hash::make($randomPassword),
+                'is_active'  => false,
+            ]);
 
-            // Si un ID est passé dans la requête, c'est une mise à jour
-            $isUpdate = $request->has('id') && $request->id;
-
-            if ($existingTutor) {
-                // Si le tutor existe et que c'est une mise à jour du même tutor
-                if ($isUpdate && $existingTutor->id == $request->id) {
-                    Log::info('Updating existing tutor:', ['id' => $existingTutor->id]);
-                    $existingTutor->update([
-                        'first_name' => $request->firstName,
-                        'last_name' => $request->lastName,
-                        'country' => $request->country,
-                        'main_subject' => $request->subject,
-                        'phone' => $request->phone,
-                        'is_over_18' => $request->isOver18 ? true : false,
-                    ]);
-                    $tutor = $existingTutor;
-                } else {
-                    // Email existe déjà pour un autre tutor
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'This email is already registered',
-                        'errors' => [
-                            'email' => ['This email is already registered']
-                        ]
-                    ], 422);
-                }
-            } else {
-                // Création d'un nouveau tutor
-                Log::info('Creating new tutor');
-                $tutor = Tutor::create([
-                    'first_name' => $request->firstName,
-                    'last_name' => $request->lastName,
-                    'email' => $request->email,
-                    'country' => $request->country,
-                    'main_subject' => $request->subject,
-                    'phone' => $request->phone,
-                    'is_over_18' => $request->isOver18 ? true : false,
-                ]);
-            }
-
-            Log::info('Tutor saved successfully:', ['id' => $tutor->id]);
+            // Create tutor profile
+            $tutor = Tutor::create([
+                'user_id'      => $user->id,
+                'first_name'   => $request->firstName,
+                'last_name'    => $request->lastName,
+                'email'        => $request->email,
+                'country'      => $request->country,
+                'main_subject' => $request->subject,
+                'phone'        => $request->phone,
+                'is_over_18'   => $request->isOver18,
+                'status'       => 'draft'
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Profile saved successfully',
+                'message' => 'Tutor account created. Password setup required.',
                 'data' => new TutorResource($tutor)
-            ], 200);
+            ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation error:', $e->errors());
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Error saving profile:', [
+            Log::error('Tutor registration failed', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error saving profile',
+                'message' => 'Registration failed',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+
 
     public function getTutorDraft(string $email): JsonResponse
     {
