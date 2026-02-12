@@ -107,38 +107,54 @@ class TutorRegistrationController extends Controller
     public function savePhotoStep(Request $request): JsonResponse
     {
         try {
+
             $validated = $request->validate([
                 'tutorId' => 'required|exists:tutors,id',
-                'photo' => 'required|image|mimes:jpeg,png,jpg|max:5120'
+                'photo'   => 'required|image|mimes:jpeg,png,jpg|max:5120'
             ]);
 
-            $tutor = Tutor::findOrFail($request->tutorId);
+            $tutor = Tutor::findOrFail($validated['tutorId']);
 
             if ($request->hasFile('photo')) {
-                // Supprimer l'ancienne photo si elle existe
+
+                // Delete old photo if exists
                 if ($tutor->profile_photo) {
                     Storage::disk('public')->delete($tutor->profile_photo);
                 }
 
-                $path = $request->file('photo')->store('tutors/photos', 'public');
-                
+                // Store new photo
+                $path = $request->file('photo')
+                                ->store('tutors/photos', 'public');
+
                 $tutor->update([
                     'profile_photo' => $path
                 ]);
             }
 
+            // Generate public URL
+            $photoUrl = $tutor->profile_photo
+                ? Storage::disk('public')->url($tutor->profile_photo)
+                : null;
+
             return response()->json([
                 'success' => true,
                 'message' => 'Photo saved successfully',
-                'data' => new TutorResource($tutor)
+                'data' => [
+                    'tutor' => new TutorResource($tutor),
+                    'profilePhotoUrl' => $photoUrl
+                ]
             ], 200);
 
         } catch (\Exception $e) {
-            Log::error('Error saving photo:', ['message' => $e->getMessage()]);
+
+            Log::error('Error saving photo:', [
+                'message' => $e->getMessage()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error saving photo',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
@@ -386,22 +402,36 @@ class TutorRegistrationController extends Controller
                 $tutor->update(['timezone' => $request->timezone]);
             }
 
-            // Créer nouvelles disponibilités seulement si les slots sont valides
+            // Create availability from array structure [{ day, slots }]
             if ($request->has('availability') && is_array($request->availability)) {
+
                 foreach ($request->availability as $dayData) {
-                    if (isset($dayData['slots']) && is_array($dayData['slots'])) {
-                        foreach ($dayData['slots'] as $slot) {
-                            // Vérifier que from et to ne sont pas null ou vides
-                            if (!empty($slot['from']) && !empty($slot['to']) && 
-                                $slot['from'] !== 'null' && $slot['to'] !== 'null') {
-                                TutorAvailability::create([
-                                    'tutor_id' => $tutor->id,
-                                    'timezone' => $request->timezone,
-                                    'day_of_week' => strtolower($dayData['day']),
-                                    'start_time' => $slot['from'],
-                                    'end_time' => $slot['to']
-                                ]);
-                            }
+
+                    if (
+                        !isset($dayData['day']) ||
+                        !isset($dayData['slots']) ||
+                        !is_array($dayData['slots'])
+                    ) {
+                        continue;
+                    }
+
+                    $day = strtolower($dayData['day']);
+
+                    foreach ($dayData['slots'] as $slot) {
+
+                        $from = $slot['from'] ?? null;
+                        $to   = $slot['to'] ?? null;
+
+                        // only save valid slots
+                        if (!empty($from) && !empty($to)) {
+
+                            TutorAvailability::create([
+                                'tutor_id'    => $tutor->id,
+                                'timezone'    => $request->timezone,
+                                'day_of_week' => $day,
+                                'start_time'  => $from,
+                                'end_time'    => $to
+                            ]);
                         }
                     }
                 }
