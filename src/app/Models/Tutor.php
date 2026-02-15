@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\TutorRegistrationStep;
 
 class Tutor extends Model
 {
@@ -87,4 +88,10 @@ class Tutor extends Model
     {
         return $this->belongsTo(PricingPack::class);
     }
+
+    public function registrationSteps()
+    {
+        return $this->hasMany(TutorRegistrationStep::class);
+    }
+
 }

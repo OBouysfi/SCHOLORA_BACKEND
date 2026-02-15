@@ -10,7 +10,13 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\Student\StudentRegistrationController;
 use App\Http\Controllers\Api\Admin\PricingPackController;
 use App\Http\Controllers\Api\RenewController;
+use App\Http\Controllers\Api\Admin\TutorVerificationController;
 
+/***
+ * 
+ *  AUTH ROUTES
+ * 
+ */
 Route::prefix('auth')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);  
@@ -23,6 +29,10 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+/**
+ * 
+ * End Auth Routes
+ */
 
 // Password Reset Routes
 Route::prefix('auth')->group(function () {
@@ -35,25 +45,50 @@ Route::prefix('auth')->group(function () {
 
 // User stats API
 Route::middleware('auth:api')->get('/user-stats', [AuthController::class, 'userStats']);
-
-// Super Admin Routes
+/***
+ * 
+ * Super Admin Routes
+ * 
+ * 
+ */
 Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function () {
-   Route::get('dashboard', [AdminController::class, 'dashboard']);
-   Route::get('users', [AdminController::class, 'users']);
-   Route::get('roles', [AdminController::class, 'roles']);
-});
-Route::prefix('admin')->group(function () {
+    Route::get('dashboard', [AdminController::class, 'dashboard']);
+    Route::get('users', [AdminController::class, 'users']);
+    Route::get('roles', [AdminController::class, 'roles']);
+   // Pricing
     Route::get('pricing-packs', [PricingPackController::class, 'index']);
     Route::post('pricing-packs', [PricingPackController::class, 'store']);
     Route::put('pricing-packs/{id}', [PricingPackController::class, 'update']);
     Route::delete('pricing-packs/{id}', [PricingPackController::class, 'destroy']);
+    // Verification Tutor
+    Route::prefix('tutor-applications')->group(function () {
+        Route::get('/',          [TutorVerificationController::class, 'index']);
+        Route::get('/stats',     [TutorVerificationController::class, 'stats']);
+        Route::get('/{id}',      [TutorVerificationController::class, 'show']);
+        Route::put('/{id}/status', [TutorVerificationController::class, 'updateStatus']);
+        Route::post('/bulk-status', [TutorVerificationController::class, 'bulkUpdateStatus']);
+        Route::put('/{applicationId}/documents/{documentId}/verify', [TutorVerificationController::class, 'verifyDocument']);
+    });
 });
+    
+
+
+
+
+
+
+
+
 // Newsletter
 Route::post('/newsletters', [NewsleterController::class, 'store']);
 Route::get('/newsletters', [NewsleterController::class, 'index']);
 Route::middleware('auth:api')->post('/newsletters/send-emails', [NewsleterController::class, 'sendEmails']);
 // Contact Support
 Route::post('/contact', [ContactController::class, 'store']);
+
+
+
+
 
 Route::prefix('tutor-registration')->group(function () {
     Route::post('/about', [TutorRegistrationController::class, 'saveAboutStep']);
@@ -68,9 +103,13 @@ Route::prefix('tutor-registration')->group(function () {
     Route::post('/submit', [TutorRegistrationController::class, 'submitProfile']);
 });
 
+
+
+
+
 Route::prefix('students')->group(function () {
     Route::post('/register', [StudentRegistrationController::class, 'store']);
-    Route::post('/login', [StudentAuthController::class, 'login']);
+    // Route::post('/login', [StudentAuthController::class, 'login']);
 });
 
 //renew request
