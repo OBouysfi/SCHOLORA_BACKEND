@@ -71,7 +71,9 @@ Route::prefix('admin')->middleware(['auth:api', 'super.admin'])->group(function 
     });
 });
     
-
+Route::prefix('admin')->group(function () {
+    Route::get('pricing-packs', [PricingPackController::class, 'index']);
+});
 
 
 

@@ -15,10 +15,27 @@ use App\Models\TutorCertification;
 use App\Models\TutorEducation;
 use App\Models\TutorAvailability;
 use App\Models\User;
+use Carbon\Carbon;
+use App\Models\TutorRegistrationStep;
 
 
 class TutorRegistrationController extends Controller
 {
+
+    private function markStepCompleted(int $tutorId, string $stepName, array $data = []): void
+    {
+        TutorRegistrationStep::updateOrCreate(
+            [
+                'tutor_id' => $tutorId,
+                'step_name' => $stepName,
+            ],
+            [
+                'status' => 'complete',
+                'data' => !empty($data) ? json_encode($data) : null,
+                'completed_at' => now(),
+            ]
+        );
+    }
 
     public function saveAboutStep(Request $request): JsonResponse
     {
@@ -56,8 +73,15 @@ class TutorRegistrationController extends Controller
                 'main_subject' => $request->subject,
                 'phone'        => $request->phone,
                 'is_over_18'   => $request->isOver18,
-                'status'       => 'draft'
+                'status'       => 'draft',
+
+                // ASSIGN FREE PACK IMMEDIATELY
+                'pricing_pack_id' => 1,
+                'pack_subscribed_at' => Carbon::now(),
+                'pack_expires_at' => null
             ]);
+
+            $this->markStepCompleted($tutor->id, 'about');
 
             return response()->json([
                 'success' => true,
@@ -136,6 +160,8 @@ class TutorRegistrationController extends Controller
                 ? Storage::disk('public')->url($tutor->profile_photo)
                 : null;
 
+            $this->markStepCompleted($tutor->id, 'photo');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Photo saved successfully',
@@ -182,6 +208,7 @@ class TutorRegistrationController extends Controller
 
             // Si pas de certificat, juste retourner
             if ($hasNoCertificate) {
+                $this->markStepCompleted($tutor->id, 'certification');
                 return response()->json([
                     'success' => true,
                     'message' => 'Certification step saved successfully',
@@ -212,6 +239,8 @@ class TutorRegistrationController extends Controller
             }
 
             Log::info('Certifications saved successfully:', ['id' => $tutor->id]);
+
+            $this->markStepCompleted($tutor->id, 'certification');
 
             return response()->json([
                 'success' => true,
@@ -250,6 +279,7 @@ class TutorRegistrationController extends Controller
             $tutor->education()->delete();
 
             if ($hasNoEducation) {
+                $this->markStepCompleted($tutor->id, 'education');
                 return response()->json([
                     'success' => true,
                     'message' => 'Education step saved successfully',
@@ -279,6 +309,8 @@ class TutorRegistrationController extends Controller
                     ]);
                 }
             }
+
+            $this->markStepCompleted($tutor->id, 'education');
 
             return response()->json([
                 'success' => true,
@@ -312,6 +344,8 @@ class TutorRegistrationController extends Controller
 
             Log::info('Description saved successfully:', ['id' => $tutor->id]);
 
+            $this->markStepCompleted($tutor->id, 'description');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Description saved successfully',
@@ -333,7 +367,7 @@ class TutorRegistrationController extends Controller
         try {
             $validated = $request->validate([
                 'tutorId' => 'required|exists:tutors,id',
-                'introVideo' => 'nullable|file|mimes:mp4,mov,avi|max:102400',
+                'introVideo' => 'nullable|file|mimes:mp4,mov,avi,webm|max:102400',
                 'videoLink' => 'nullable|url',
                 'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg|max:5120'
             ]);
@@ -364,6 +398,8 @@ class TutorRegistrationController extends Controller
             ]);
 
             Log::info('Video saved successfully:', ['id' => $tutor->id]);
+
+            $this->markStepCompleted($tutor->id, 'video');
 
             return response()->json([
                 'success' => true,
@@ -437,6 +473,8 @@ class TutorRegistrationController extends Controller
                 }
             }
 
+            $this->markStepCompleted($tutor->id, 'availability');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Availability saved successfully',
@@ -456,36 +494,82 @@ class TutorRegistrationController extends Controller
             ], 500);
         }
     }
+
+
     public function savePricingStep(Request $request): JsonResponse
     {
         try {
+
             $validated = $request->validate([
                 'tutorId' => 'required|exists:tutors,id',
                 'hourlyRate' => 'required|numeric|min:1|max:200'
             ]);
 
+
             $tutor = Tutor::findOrFail($request->tutorId);
-            
+
+
             $tutor->update([
+
                 'hourly_rate' => $request->hourlyRate,
-                'currency' => 'MAD'
+
+                'currency' => 'MAD',
+
+
+                // ASSIGN FREE PACK
+                'pricing_pack_id' => 1,
+
+
+                // SET SUBSCRIBE DATE
+                'pack_subscribed_at' => Carbon::now(),
+
+
+
+                // KEEP EXPIRE NULL
+                'pack_expires_at' => null
+
             ]);
 
-            Log::info('Pricing saved successfully:', ['id' => $tutor->id]);
+
+            Log::info('Pricing and free pack assigned:', [
+
+                'id' => $tutor->id
+
+            ]);
+
+            $this->markStepCompleted($tutor->id, 'pricing');
 
             return response()->json([
+
                 'success' => true,
+
                 'message' => 'Pricing saved successfully',
+
                 'data' => new TutorResource($tutor)
+
             ], 200);
 
+
         } catch (\Exception $e) {
-            Log::error('Error saving pricing:', ['message' => $e->getMessage()]);
+
+
+            Log::error('Error saving pricing:', [
+
+                'message' => $e->getMessage()
+
+            ]);
+
+
             return response()->json([
+
                 'success' => false,
+
                 'message' => 'Error saving pricing',
+
                 'error' => $e->getMessage()
+
             ], 500);
+
         }
     }
 
@@ -504,6 +588,8 @@ class TutorRegistrationController extends Controller
             ]);
 
             Log::info('Profile submitted for approval:', ['id' => $tutor->id]);
+
+            $this->markStepCompleted($tutor->id, 'submitted');
 
             return response()->json([
                 'success' => true,

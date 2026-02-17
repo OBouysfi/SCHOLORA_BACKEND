@@ -34,8 +34,10 @@ class Tutor extends Model
         'average_rating',
         'total_reviews',
         'user_id',
+        'pricing_pack_id',
+        'pack_subscribed_at',
+        'pack_expires_at',
     ];
-
     protected $casts = [
         'is_over_18' => 'boolean',
         'hourly_rate' => 'decimal:2',
